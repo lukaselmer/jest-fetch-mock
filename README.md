@@ -1,7 +1,9 @@
 # Jest Fetch Mock
 
-![npm downloads](https://img.shields.io/npm/dw/jest-fetch-mock)
-![Node.js CI](https://github.com/jefflau/jest-fetch-mock/workflows/Node.js%20CI/badge.svg)
+![npm downloads](https://img.shields.io/npm/dw/jest-fetch-mock-fork)
+![Node.js CI](https://github.com/lukaselmer/jest-fetch-mock/workflows/Node.js%20CI/badge.svg)
+
+Forked from https://github.com/jefflau/jest-fetch-mock, which is (as of 2023-04-05) not published on npm in the latest version.
 
 Fetch is the canonical way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going and it uses Jest's built-in support for mocking under the surface. This means that any of the `jest.fn()` methods are also available. For more information on the jest mock API, check their docs [here](https://facebook.github.io/jest/docs/en/mock-functions.html)
 
@@ -30,7 +32,7 @@ It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com
 To setup your fetch mock you need to do the following things:
 
 ```
-$ npm install --save-dev jest-fetch-mock
+$ npm install --save-dev jest-fetch-mock-fork
 ```
 
 Create a `setupJest` file to setup the mock or add this to an existing `setupFile`. :
@@ -39,7 +41,7 @@ Create a `setupJest` file to setup the mock or add this to an existing `setupFil
 
 ```js
 //setupJest.js or similar file
-require('jest-fetch-mock').enableMocks()
+require('jest-fetch-mock-fork').enableMocks()
 ```
 
 Add the setupFile to your jest config in `package.json`:
@@ -64,7 +66,7 @@ If you would like to have the 'fetchMock' available in all tests but not enabled
 
 ```js
 // adds the 'fetchMock' global variable and rewires 'fetch' global to call 'fetchMock' instead of the real implementation
-require('jest-fetch-mock').enableMocks()
+require('jest-fetch-mock-fork').enableMocks()
 // changes default behavior of fetchMock to use the real 'fetch' implementation and not mock responses
 fetchMock.dontMock()
 ```
@@ -120,13 +122,13 @@ to `fetchMock.mockOnce` without a risk of changing their behavior.
 For JavaScript add the following line to the start of your test case (before any other requires)
 
 ```js
-require('jest-fetch-mock').enableMocks()
+require('jest-fetch-mock-fork').enableMocks()
 ```
 
 For TypeScript/ES6 add the following lines to the start of your test case (before any other imports)
 
 ```typescript
-import { enableFetchMocks } from 'jest-fetch-mock'
+import { enableFetchMocks } from 'jest-fetch-mock-fork'
 enableFetchMocks()
 ```
 
@@ -136,13 +138,13 @@ If you are using TypeScript and receive errors about the `fetchMock` global not 
 add a `global.d.ts` file to the root of your project (or add the following line to an existing global file):
 
 ```typescript
-import 'jest-fetch-mock'
+import 'jest-fetch-mock-fork'
 ```
 
 If you prefer you can also just import the fetchMock in a test case.
 
 ```typescript
-import fetchMock from 'jest-fetch-mock'
+import fetchMock from 'jest-fetch-mock-fork'
 ```
 
 You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and/or "esnext" to the 'compilerConfig.lib' property
@@ -222,7 +224,7 @@ fetch.mockReject(req =>
 - `fetch.disableMocks()` - Disable fetch mocking and restore default implementation of `fetch` and/or `node-fetch`
 - `fetch.mock` - The mock state for your fetch calls. Make assertions on the arguments given to `fetch` when called by the functions you are testing. For more information check the [Jest docs](https://facebook.github.io/jest/docs/en/mock-functions.html#mock-property)
 
-For information on the arguments body and init can take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
+For information on the arguments body and init can take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock-fork` uses under the surface.
 
 https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
 
@@ -235,7 +237,7 @@ In most of the complicated examples below, I am testing my action creators in Re
 
 ### Simple mock and assert
 
-In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch. Make sure the function wrapping your test is marked as async. 
+In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch. Make sure the function wrapping your test is marked as async.
 
 Once we've done that we can start to mock our response. We want to give it an object with a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias for a call to `mockResponseOnce`.
 
@@ -701,7 +703,7 @@ In some test scenarios, you may want to temporarily disable (or enable) mocking 
 You may want to only mock fetch requests to some URLs that match a given request path while in others you may want to mock
 all requests except those matching a given request path. You may even want to conditionally mock based on request headers.
 
-The conditional mock functions cause `jest-fetch-mock` to pass fetches through to the concrete fetch implementation conditionally.
+The conditional mock functions cause `jest-fetch-mock-fork` to pass fetches through to the concrete fetch implementation conditionally.
 Calling `fetch.dontMock`, `fetch.doMock`, `fetch.doMockIf` or `fetch.dontMockIf` overrides the default behavior
 of mocking/not mocking all requests. `fetch.dontMockOnce`, `fetch.doMockOnce`, `fetch.doMockOnceIf` and `fetch.dontMockOnceIf` only overrides the behavior
 for the next call to `fetch`, then returns to the default behavior (either mocking all requests or mocking the requests based on the last call to

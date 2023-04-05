@@ -1,4 +1,4 @@
-import fm, { enableFetchMocks, disableFetchMocks, MockResponseInit } from 'jest-fetch-mock';
+import fm, { enableFetchMocks, disableFetchMocks, MockResponseInit } from 'jest-fetch-mock-fork';
 
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {

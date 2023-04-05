@@ -741,7 +741,7 @@ describe('conditional mocking', () => {
 })
 
 it('enable/disable', () => {
-  const jestFetchMock = require('jest-fetch-mock')
+  const jestFetchMock = require('jest-fetch-mock-fork')
   jestFetchMock.disableMocks()
   expect(jest.isMockFunction(fetch)).toBe(false)
   jestFetchMock.enableMocks()

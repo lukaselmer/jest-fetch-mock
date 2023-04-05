@@ -7,7 +7,7 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "jest-fetch-mock": [
+      "jest-fetch-mock-fork": [
         "."
       ]
     },
