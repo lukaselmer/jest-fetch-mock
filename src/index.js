@@ -1,17 +1,24 @@
-const crossFetch = require('cross-fetch')
+const crossFetch = await import('cross-fetch')
+const vitest = await importVitestIfAvailable()
 global.fetch = crossFetch
 global.Response = crossFetch.Response
 global.Headers = crossFetch.Headers
 global.Request = crossFetch.Request
 
-if (typeof Promise === 'undefined') {
-  Promise = require('promise-polyfill')
-} else if (!('finally' in Promise) || typeof Promise.finally === 'undefined') {
-  Promise.finally = require('promise-polyfill').finally
+/**
+ *
+ * @returns {Promise<import('vitest') | undefined>}
+ */
+async function importVitestIfAvailable() {
+  try {
+    return import('vitest')
+  } catch {
+    return undefined
+  }
 }
 
 if (typeof DOMException === 'undefined') {
-  DOMException = require('domexception')
+  DOMException = await import('domexception')
 }
 
 const ActualResponse = Response
@@ -83,7 +90,7 @@ function staticMatches(value) {
 
 const isFn = (unknown) => typeof unknown === 'function'
 
-const isMocking = jest.fn(staticMatches(true))
+const isMocking = fn(staticMatches(true))
 
 const abortError = () =>
   new DOMException('The operation was aborted. ', 'AbortError')
@@ -146,7 +153,7 @@ const normalizeError = (errorOrFunction) =>
     ? errorOrFunction
     : () => Promise.reject(errorOrFunction)
 
-const fetch = jest.fn(normalizeResponse(''))
+export const fetch = fn(normalizeResponse(''))
 fetch.Headers = Headers
 fetch.Response = responseWrapper
 fetch.Request = Request
@@ -258,7 +265,7 @@ fetch.resetMocks = () => {
 fetch.enableMocks = fetch.enableFetchMocks = () => {
   global.fetchMock = global.fetch = fetch
   try {
-    jest.setMock('node-fetch', fetch)
+    setMock('node-fetch', fetch)
   } catch (error) {
     //ignore
   }
@@ -267,10 +274,31 @@ fetch.enableMocks = fetch.enableFetchMocks = () => {
 fetch.disableMocks = fetch.disableFetchMocks = () => {
   global.fetch = crossFetch
   try {
-    jest.dontMock('node-fetch')
+    dontMock('node-fetch')
   } catch (error) {
     //ignore
   }
 }
 
-module.exports = fetch.default = fetch
+function fn(...args) {
+  const helpers = vitest ? vitest.vi : jest
+  return helpers.fn(...args)
+}
+
+function setMock(moduleName, moduleExports) {
+  if (vitest) {
+    vitest.mock(moduleName, () => moduleExports)
+  } else {
+    globalThis.jest.setMock(moduleName, moduleExports)
+  }
+}
+
+function dontMock(moduleName) {
+  if (vitest) {
+    vitest.unmock(moduleName)
+  } else {
+    jest.dontMock(moduleName)
+  }
+}
+
+export default fetch

@@ -3,9 +3,9 @@
 ![npm downloads](https://img.shields.io/npm/dw/jest-fetch-mock-fork)
 ![Node.js CI](https://github.com/lukaselmer/jest-fetch-mock/workflows/Node.js%20CI/badge.svg)
 
-Forked from https://github.com/jefflau/jest-fetch-mock, which is (as of 2023-04-05) not published on npm in the latest version.
+Forked from https://github.com/jefflau/jest-fetch-mock, which is (as of 2023-04-05) not published on npm in the latest version. Compatible with vite / vitest.
 
-Fetch is the canonical way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going and it uses Jest's built-in support for mocking under the surface. This means that any of the `jest.fn()` methods are also available. For more information on the jest mock API, check their docs [here](https://facebook.github.io/jest/docs/en/mock-functions.html)
+Fetch is the canonical way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going and it uses Jest's built-in support for mocking under the surface. This means that any of the `jest.fn()` / `vi.fn()` methods are also available. For more information on the jest mock API, check their docs [here](https://facebook.github.io/jest/docs/en/mock-functions.html)
 
 It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com/package/cross-fetch) polyfill, so it supports Node.js and any browser-like runtime.
 
@@ -58,7 +58,7 @@ Add the setupFile to your jest config in `package.json`:
 
 With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests
 
-Note: the `resetMocks` Jest configuration default was changed from `false` to `true` in Jest 4.0.1.  Therefore the Jest configuration of setting it to `false` is required if the `setupJest.js` is what calls "enableMocks()" (i.e. in the above suggested setup) otherwise you will need to call "enableMocks()" in a "beforeEach" block.
+Note: the `resetMocks` Jest configuration default was changed from `false` to `true` in Jest 4.0.1. Therefore the Jest configuration of setting it to `false` is required if the `setupJest.js` is what calls "enableMocks()" (i.e. in the above suggested setup) otherwise you will need to call "enableMocks()" in a "beforeEach" block.
 
 #### Default not mocked
 
@@ -86,20 +86,20 @@ To enable mocking for a specific URL only:
 ```js
 beforeEach(() => {
   // if you have an existing `beforeEach` just add the following lines to it
-  fetchMock.mockIf(/^https?:\/\/example.com.*$/, req => {
+  fetchMock.mockIf(/^https?:\/\/example.com.*$/, (req) => {
     if (req.url.endsWith('/path1')) {
       return 'some response body'
     } else if (req.url.endsWith('/path2')) {
       return {
         body: 'another response body',
         headers: {
-          'X-Some-Response-Header': 'Some header value'
-        }
+          'X-Some-Response-Header': 'Some header value',
+        },
       }
     } else {
       return {
         status: 404,
-        body: 'Not Found'
+        body: 'Not Found',
       }
     }
   })
@@ -185,17 +185,17 @@ The promise should resolve with a string or an object containing body and init p
 i.e:
 
 ```js
-fetch.mockResponse(() => callMyApi().then(res => ({ body: 'ok' })))
+fetch.mockResponse(() => callMyApi().then((res) => ({ body: 'ok' })))
 // OR
-fetch.mockResponse(() => callMyApi().then(res => 'ok'))
+fetch.mockResponse(() => callMyApi().then((res) => 'ok'))
 ```
 
 The function may take an optional "request" parameter of type `http.Request`:
 
 ```js
-fetch.mockResponse(req =>
+fetch.mockResponse((req) =>
   req.url === 'http://myapi/'
-    ? callMyApi().then(res => 'ok')
+    ? callMyApi().then((res) => 'ok')
     : Promise.reject(new Error('bad url'))
 )
 ```
@@ -207,13 +207,13 @@ The same goes for rejects:
 
 ```js
 fetch.mockReject(() =>
-  doMyAsyncJob().then(res => Promise.reject(res.errorToRaise))
+  doMyAsyncJob().then((res) => Promise.reject(res.errorToRaise))
 )
 // OR
-fetch.mockReject(req =>
+fetch.mockReject((req) =>
   req.headers.get('content-type') === 'text/plain'
     ? Promise.reject('invalid content type')
-    : doMyAsyncJob().then(res => Promise.reject(res.errorToRaise))
+    : doMyAsyncJob().then((res) => Promise.reject(res.errorToRaise))
 )
 ```
 
@@ -249,7 +249,7 @@ Finally we can assert on the `.mock` state that Jest provides for us to test wha
 //api.js
 export function APIRequest(who) {
   if (who === 'google') {
-    return fetch('https://google.com').then(res => res.json())
+    return fetch('https://google.com').then((res) => res.json())
   } else {
     return 'no argument provided'
   }
@@ -297,7 +297,7 @@ describe('Access token action creators', () => {
     fetch.mockResponse(JSON.stringify({ access_token: '12345' }))
 
     const expectedActions = [
-      { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' } }
+      { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' } },
     ]
     const store = mockStore({ config: { token: '' } })
 
@@ -332,7 +332,7 @@ describe('Access token action creators', () => {
     fetch.mockReject(new Error('fake error message'))
 
     const expectedActions = [
-      { type: 'SET_ACCESS_TOKEN_FAILED', error: { status: 503 } }
+      { type: 'SET_ACCESS_TOKEN_FAILED', error: { status: 503 } },
     ]
     const store = mockStore({ config: { token: '' } })
 
@@ -399,16 +399,16 @@ describe('Mocking aborts', () => {
 })
 ```
 
-
 ### Mocking a redirected response
+
 Set the counter option >= 1 in the response init object to mock a redirected response https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected. Note, this will only work in Node.js as it's a feature of node fetch's response class https://github.com/node-fetch/node-fetch/blob/master/src/response.js#L39.
 
 ```js
-fetchMock.mockResponse("<main></main>", {
+fetchMock.mockResponse('<main></main>', {
   counter: 1,
   status: 200,
-  statusText: "ok",
-});
+  statusText: 'ok',
+})
 ```
 
 ### Mocking multiple fetches with different responses
@@ -432,7 +432,7 @@ describe('Anime details action creators', () => {
 
     const expectedActions = [
       { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' } },
-      { type: 'SET_ANIME_DETAILS', animeDetails: { name: 'naruto' } }
+      { type: 'SET_ANIME_DETAILS', animeDetails: { name: 'naruto' } },
     ]
     const store = mockStore({ config: { token: null } })
 
@@ -461,25 +461,25 @@ describe('getYear action creator', () => {
     fetch.mockResponses(
       [
         JSON.stringify([{ name: 'naruto', average_score: 79 }]),
-        { status: 200 }
+        { status: 200 },
       ],
       [
         JSON.stringify([{ name: 'bleach', average_score: 68 }]),
-        { status: 200 }
+        { status: 200 },
       ],
       [
         JSON.stringify([{ name: 'one piece', average_score: 80 }]),
-        { status: 200 }
+        { status: 200 },
       ],
       [
         JSON.stringify([{ name: 'shingeki', average_score: 91 }]),
-        { status: 200 }
+        { status: 200 },
       ]
     )
 
     const expectedActions = [
       {
-        type: 'FETCH_ANIMELIST_REQUEST'
+        type: 'FETCH_ANIMELIST_REQUEST',
       },
       {
         type: 'SET_YEAR',
@@ -488,20 +488,20 @@ describe('getYear action creator', () => {
             { name: 'naruto', average_score: 7.9 },
             { name: 'bleach', average_score: 6.8 },
             { name: 'one piece', average_score: 8 },
-            { name: 'shingeki', average_score: 9.1 }
+            { name: 'shingeki', average_score: 9.1 },
           ],
-          year: 2016
-        }
+          year: 2016,
+        },
       },
       {
-        type: 'FETCH_ANIMELIST_COMPLETE'
-      }
+        type: 'FETCH_ANIMELIST_COMPLETE',
+      },
     ]
     const store = mockStore({
       config: {
-        token: { access_token: 'wtw45CmyEuh4P621IDVxWkgVr5QwTg3wXEc4Z7Cv' }
+        token: { access_token: 'wtw45CmyEuh4P621IDVxWkgVr5QwTg3wXEc4Z7Cv' },
       },
-      years: []
+      years: [],
     })
 
     return (
@@ -685,7 +685,7 @@ describe('testing timeouts', () => {
   it('resolves with function and timeout', async () => {
     fetch.mockResponseOnce(
       () =>
-        new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }), 100))
+        new Promise((resolve) => setTimeout(() => resolve({ body: 'ok' }), 100))
     )
     try {
       const response = await request()
@@ -954,7 +954,7 @@ describe('conditional mocking', () => {
 const expectMocked = async (uri, response = mockedDefaultResponse) => {
   return expect(request(uri)).resolves.toEqual(response)
 }
-const expectUnmocked = async uri => {
+const expectUnmocked = async (uri) => {
   return expect(request(uri)).resolves.toEqual(realResponse)
 }
 
@@ -985,12 +985,12 @@ describe('conditional mocking complex', () => {
         // .mockResponse(mockedDefaultResponse) // set above - here for clarity
         .mockResponseOnce('1') // 1
         .mockResponseOnce('2') // 2
-        .mockResponseOnce(async uri =>
+        .mockResponseOnce(async (uri) =>
           uri === alternativeUrl ? alternativeBody : '3'
         ) // 3
         .mockResponseOnce('4') // 4
         .mockResponseOnce('5') // 5
-        .mockResponseOnce(async uri =>
+        .mockResponseOnce(async (uri) =>
           uri === alternativeUrl ? alternativeBody : mockedDefaultResponse
         ) // 6
     })
