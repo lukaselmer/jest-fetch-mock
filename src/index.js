@@ -1,21 +1,9 @@
 const crossFetch = await import('cross-fetch')
-const vitest = await importVitestIfAvailable()
+let vitest = undefined
 global.fetch = crossFetch
 global.Response = crossFetch.Response
 global.Headers = crossFetch.Headers
 global.Request = crossFetch.Request
-
-/**
- *
- * @returns {Promise<import('vitest') | undefined>}
- */
-async function importVitestIfAvailable() {
-  try {
-    return import('vitest')
-  } catch {
-    return undefined
-  }
-}
 
 if (typeof DOMException === 'undefined') {
   DOMException = await import('domexception')
@@ -262,7 +250,8 @@ fetch.resetMocks = () => {
   fetch.isMocking = (req, reqInit) => isMocking(req, reqInit)[0]
 }
 
-fetch.enableMocks = fetch.enableFetchMocks = () => {
+fetch.enableMocks = fetch.enableFetchMocks = (usedVitest) => {
+  vitest = usedVitest
   global.fetchMock = global.fetch = fetch
   try {
     setMock('node-fetch', fetch)
